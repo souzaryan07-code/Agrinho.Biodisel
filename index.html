@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biodiesel — Energia Verde do Brasil</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <!-- ════════════════════════════════
+       NAVBAR
+  ════════════════════════════════ -->
+  <nav id="navbar">
+    <div class="nav-logo">🌻 Biodiesel</div>
+    <ul class="nav-links">
+      <li><a href="#info">O que é</a></li>
+      <li><a href="#producao">Produção</a></li>
+      <li><a href="#beneficios">Benefícios</a></li>
+      <li><a href="#comparativo">Comparativo</a></li>
+    </ul>
+  </nav>
+
+  <!-- ════════════════════════════════
+       HERO
+  ════════════════════════════════ -->
+  <section id="hero">
+    <canvas id="hero-canvas"></canvas>
+
+    <div id="hero-content">
+      <p class="hero-eyebrow">Energia Renovável Brasileira</p>
+      <h1 id="hero-heading">Do Campo<br/>ao Motor</h1>
+      <p class="hero-sub">Role para descobrir a jornada do biodiesel</p>
+    </div>
+
+    <div id="scroll-arrow">
+      <div class="arrow-line"></div>
+      <div class="arrow-tip"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       SCENE (SCROLL-ANIMATED)
+  ════════════════════════════════ -->
+  <section id="scene-section">
+    <div id="scene-sticky">
+
+      <!-- céu / fundo dinâmico -->
+      <div id="scene-bg"></div>
+
+      <!-- chão -->
+      <div id="scene-ground">
+        <div id="ground-texture"></div>
+      </div>
+
+      <!-- canvas de girassóis + sementes -->
+      <canvas id="scene-canvas"></canvas>
+
+      <!-- máquina SVG -->
+      <div id="machine-wrap">
+        <svg id="machine-svg" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
+          <!-- Plataforma base -->
+          <rect x="10" y="200" width="300" height="28" rx="7" fill="#1c2a1c" stroke="#2e7d32" stroke-width="1.5"/>
+          <!-- Corpo principal -->
+          <rect x="30" y="100" width="160" height="110" rx="10" fill="#1b2e1b" stroke="#388e3c" stroke-width="1.5"/>
+          <!-- Telhado do corpo -->
+          <rect x="28" y="98" width="164" height="14" rx="6" fill="#2e7d32"/>
+          <!-- Funil (entrada de sementes) -->
+          <polygon points="80,50 160,50 148,100 92,100" fill="#1c3a1c" stroke="#43a047" stroke-width="1.5"/>
+          <!-- Boca do funil -->
+          <rect x="96" y="28" width="58" height="24" rx="6" fill="#2e7d32" stroke="#66bb6a" stroke-width="1.5"/>
+          <text x="125" y="44" text-anchor="middle" fill="#a5d6a7" font-size="9" font-family="sans-serif" font-weight="bold">ENTRADA</text>
+
+          <!-- Janela de processo -->
+          <rect x="50" y="115" width="120" height="75" rx="6" fill="#0a1f0a" stroke="#1b5e20" stroke-width="1"/>
+
+          <!-- Engrenagem grande -->
+          <g id="gear-big" style="transform-origin:95px 152px">
+            <circle cx="95" cy="152" r="24" fill="none" stroke="#43a047" stroke-width="3"/>
+            <circle cx="95" cy="152" r="10" fill="#1b5e20"/>
+            <rect x="92" y="125" width="6" height="10" rx="3" fill="#43a047"/>
+            <rect x="92" y="169" width="6" height="10" rx="3" fill="#43a047"/>
+            <rect x="68"  y="149" width="10" height="6" rx="3" fill="#43a047"/>
+            <rect x="112" y="149" width="10" height="6" rx="3" fill="#43a047"/>
+            <rect x="76"  y="131" width="7" height="7" rx="3" fill="#2e7d32"/>
+            <rect x="112" y="131" width="7" height="7" rx="3" fill="#2e7d32"/>
+            <rect x="76"  y="166" width="7" height="7" rx="3" fill="#2e7d32"/>
+            <rect x="112" y="166" width="7" height="7" rx="3" fill="#2e7d32"/>
+          </g>
+
+          <!-- Engrenagem pequena -->
+          <g id="gear-small" style="transform-origin:141px 145px">
+            <circle cx="141" cy="145" r="16" fill="none" stroke="#66bb6a" stroke-width="2.5"/>
+            <circle cx="141" cy="145" r="7" fill="#2e7d32"/>
+            <rect x="138" y="126" width="6" height="8" rx="3" fill="#66bb6a"/>
+            <rect x="138" y="157" width="6" height="8" rx="3" fill="#66bb6a"/>
+            <rect x="122"  y="142" width="8" height="6" rx="3" fill="#66bb6a"/>
+            <rect x="153" y="142" width="8" height="6" rx="3" fill="#66bb6a"/>
+          </g>
+
+          <!-- Tubo de saída -->
+          <rect x="190" y="130" width="100" height="22" rx="7" fill="#1c3a1c" stroke="#388e3c" stroke-width="1.5"/>
+          <rect x="184" y="135" width="12" height="12" rx="3" fill="#2e7d32"/>
+
+          <!-- Líquido no tubo (animado via JS opacity/clip) -->
+          <rect id="machine-liquid" x="192" y="133" width="0" height="16" rx="5" fill="#00e676" opacity="0.85"/>
+
+          <!-- Saída: gota -->
+          <circle id="liquid-dot" cx="290" cy="141" r="6" fill="#00e676" opacity="0"/>
+
+          <!-- Chaminé -->
+          <rect x="170" y="70" width="18" height="44" rx="5" fill="#1c3a1c" stroke="#2e7d32" stroke-width="1"/>
+          <circle id="smoke-a" cx="179" cy="64" r="7" fill="#2e7d32" opacity="0"/>
+          <circle id="smoke-b" cx="174" cy="50" r="10" fill="#388e3c" opacity="0"/>
+
+          <!-- Label -->
+          <text x="110" y="222" text-anchor="middle" fill="#66bb6a" font-size="10" font-family="sans-serif" font-weight="bold" letter-spacing="1">PROCESSADORA BIODIESEL</text>
+        </svg>
+      </div>
+
+      <!-- tubo externo (máquina → caminhão) -->
+      <svg id="pipe-svg" viewBox="0 0 1400 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="20" width="1400" height="40" rx="10" fill="#1c3a1c" stroke="#2e7d32" stroke-width="1.5"/>
+        <rect id="pipe-liquid" x="0" y="24" width="0" height="32" rx="8" fill="#00e676" opacity="0.9"/>
+        <rect id="pipe-shine" x="0" y="26" width="0" height="10" rx="5" fill="rgba(255,255,255,0.18)"/>
+      </svg>
+
+      <!-- caminhão -->
+      <div id="truck-wrap">
+        <svg id="truck-svg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+          <!-- Tanque cilíndrico -->
+          <ellipse cx="230" cy="90" rx="155" ry="52" fill="#1b2e1b" stroke="#2e7d32" stroke-width="2"/>
+          <ellipse cx="75"  cy="90" rx="52"  ry="52" fill="#1b2e1b" stroke="#2e7d32" stroke-width="2"/>
+          <ellipse cx="385" cy="90" rx="18"  ry="52" fill="#1c3a1c" stroke="#2e7d32" stroke-width="1.5"/>
+          <!-- Brilho no tanque -->
+          <ellipse cx="220" cy="72" rx="130" ry="18" fill="rgba(255,255,255,0.05)"/>
+          <!-- Cabine -->
+          <rect x="0" y="48" width="80" height="80" rx="10" fill="#1b5e20" stroke="#2e7d32" stroke-width="2"/>
+          <!-- Vidro cabine -->
+          <rect x="6" y="54" width="62" height="42" rx="6" fill="#00acc1" opacity="0.45"/>
+          <!-- Parachoque -->
+          <rect x="0" y="120" width="80" height="10" rx="3" fill="#2e7d32"/>
+          <!-- Rodas -->
+          <circle cx="28"  cy="148" r="22" fill="#111" stroke="#333" stroke-width="3"/>
+          <circle cx="28"  cy="148" r="10" fill="#222"/>
+          <circle cx="82"  cy="148" r="22" fill="#111" stroke="#333" stroke-width="3"/>
+          <circle cx="82"  cy="148" r="10" fill="#222"/>
+          <circle cx="268" cy="148" r="22" fill="#111" stroke="#333" stroke-width="3"/>
+          <circle cx="268" cy="148" r="10" fill="#222"/>
+          <circle cx="318" cy="148" r="22" fill="#111" stroke="#333" stroke-width="3"/>
+          <circle cx="318" cy="148" r="10" fill="#222"/>
+          <!-- Líquido no tanque (revelado) -->
+          <clipPath id="tank-clip">
+            <ellipse cx="230" cy="90" rx="153" ry="50"/>
+          </clipPath>
+          <rect id="tank-fill" x="77" y="90" width="306" height="50" fill="#00e676" clip-path="url(#tank-clip)" opacity="0"/>
+          <!-- Reflexo líquido -->
+          <rect id="tank-shine" x="77" y="90" width="306" height="14" fill="rgba(255,255,255,0.15)" clip-path="url(#tank-clip)" opacity="0"/>
+          <!-- Label B100 -->
+          <text id="tank-label" x="230" y="96" text-anchor="middle" fill="#00e676" font-size="18" font-weight="bold" font-family="sans-serif" opacity="0">BIODIESEL</text>
+          <text id="tank-sub" x="230" y="114" text-anchor="middle" fill="#69f0ae" font-size="11" font-family="sans-serif" opacity="0" letter-spacing="3">B 1 0 0</text>
+        </svg>
+      </div>
+
+      <!-- REVEAL FINAL -->
+      <div id="final-reveal">
+        <div id="final-bg"></div>
+        <div id="final-content">
+          <div id="final-tag">COMBUSTÍVEL DO FUTURO</div>
+          <div id="final-word">BIODIESEL</div>
+          <div id="final-desc">Energia limpa · Renovável · Brasileiro</div>
+          <button id="final-cta" onclick="document.getElementById('info').scrollIntoView({behavior:'smooth'})">
+            Saiba mais ↓
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /scene-sticky -->
+  </section><!-- /scene-section -->
+
+  <!-- ════════════════════════════════
+       INFO
+  ════════════════════════════════ -->
+  <section id="info" class="content-section">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <span class="tag">O QUE É</span>
+        <h2>Biodiesel em poucas palavras</h2>
+        <p>Um biocombustível produzido a partir de óleos vegetais ou gorduras animais, capaz de substituir ou complementar o diesel fóssil em qualquer motor a diesel.</p>
+      </div>
+
+      <div class="cards-3 reveal">
+        <div class="info-card">
+          <span class="ic-icon">🌱</span>
+          <h3>Origem Natural</h3>
+          <p>Produzido de soja, girassol, canola, palma, mamona ou gordura animal. O Brasil utiliza principalmente o óleo de soja — subproduto da cadeia alimentar.</p>
+        </div>
+        <div class="info-card">
+          <span class="ic-icon">⚙️</span>
+          <h3>Compatível com Motores</h3>
+          <p>Usado puro (B100) ou misturado ao diesel mineral. Atualmente o Brasil exige B14 — 14% de biodiesel em todo diesel vendido no país.</p>
+        </div>
+        <div class="info-card">
+          <span class="ic-icon">🇧🇷</span>
+          <h3>Liderança Brasileira</h3>
+          <p>O Brasil é o segundo maior produtor mundial, com capacidade instalada de mais de 10 bilhões de litros por ano e tecnologia de ponta.</p>
+        </div>
+      </div>
+
+      <div class="stats-row reveal">
+        <div class="stat">
+          <span class="stat-num">78%</span>
+          <span class="stat-label">menos CO₂<br/>vs diesel fóssil</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">B14</span>
+          <span class="stat-label">mistura<br/>obrigatória 2024</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">7bi L</span>
+          <span class="stat-label">produção<br/>anual brasileira</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">28d</span>
+          <span class="stat-label">biodegradação<br/>completa</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       PRODUÇÃO
+  ════════════════════════════════ -->
+  <section id="producao" class="content-section dark-section">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <span class="tag">COMO É FEITO</span>
+        <h2>Da semente ao combustível</h2>
+        <p>O processo de produção do biodiesel passa por etapas bem definidas, desde o cultivo até a distribuição nos postos.</p>
+      </div>
+
+      <div class="timeline reveal">
+        <div class="tl-item">
+          <div class="tl-icon">🌻</div>
+          <div class="tl-body">
+            <h4>Cultivo e Colheita</h4>
+            <p>Oleaginosas como soja e girassol são plantadas e colhidas. As sementes vão para usinas especializadas em extração de óleo.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon">🏭</div>
+          <div class="tl-body">
+            <h4>Extração do Óleo</h4>
+            <p>Prensagem mecânica e extração por solvente obtêm o óleo bruto, que passa por degomagem e neutralização antes do processo químico.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon">⚗️</div>
+          <div class="tl-body">
+            <h4>Transesterificação</h4>
+            <p>O óleo reage com metanol ou etanol na presença de catalisador alcalino. Os triglicerídeos se quebram em ésteres (biodiesel) e glicerina.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon">🔬</div>
+          <div class="tl-body">
+            <h4>Purificação e Testes</h4>
+            <p>O biodiesel é lavado, seco e testado seguindo normas ABNT/ANP para viscosidade, acidez, teor de éster e flashpoint antes da certificação.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon">🚛</div>
+          <div class="tl-body">
+            <h4>Distribuição</h4>
+            <p>Caminhões-tanque transportam o combustível às refinarias para mistura com o diesel mineral, chegando a todos os postos do país.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+    
+    <!-- ════════════════════════════════
+       SEÇÃO FINAL — BOTÃO CTA
+  ════════════════════════════════ -->
+  <section id="cta-section">
+    <div id="cta-deco-c1"></div>
+    <div id="cta-deco-c2"></div>
+    <div id="cta-deco-c3"></div>
+    <div id="cta-inner">
+      <span id="cta-badge">🌱 Programa Agrinho · Paraná</span>
+      <h2 id="cta-title">O Paraná lidera a<br/>revolução verde</h2>
+      <p id="cta-sub">Saiba como o biodiesel transforma o campo paranaense, fortalece cooperativas e constrói um futuro sustentável para todos.</p>
+      <button id="modal-open-btn" aria-haspopup="dialog">
+        <span id="modal-btn-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 22c0-5.5 3-10.5 8-13 1.5 4-1 8-4 10 3-1 7-4 8-9 2 2.5 2 6 0 9 2-1 4-4 4-8 1.5 2 2 5 1 8"/>
+            <path d="M12 22v-4"/>
+          </svg>
+        </span>
+        <span class="modal-btn-text">Descubra mais sobre o Biodiesel no Paraná</span>
+        <span class="modal-btn-arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       BENEFÍCIOS
+  ════════════════════════════════ -->
+  <section id="beneficios" class="content-section">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <span class="tag">BENEFÍCIOS</span>
+        <h2>Por que usar biodiesel?</h2>
+        <p>Além de renovável, o biodiesel traz vantagens concretas para o meio ambiente, para a economia e para a saúde pública.</p>
+      </div>
+
+      <div class="benefits-grid reveal">
+        <div class="benefit-card large">
+          <div class="bc-icon">💨</div>
+          <h3>Ar mais limpo</h3>
+          <p>Reduz em até 47% a emissão de material particulado e diminui significativamente monóxido de carbono, hidrocarbonetos e compostos aromáticos cancerígenos — impactando diretamente a saúde de quem vive nas cidades.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="bc-icon">🌊</div>
+          <h3>Baixo risco ambiental</h3>
+          <p>Biodegradável em menos de 28 dias, o biodiesel causa impacto mínimo em caso de derramamento em solo ou água.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="bc-icon">♻️</div>
+          <h3>Economia circular</h3>
+          <p>A glicerina gerada como subproduto abastece indústrias de cosméticos, farmacêuticos e alimentos — zero desperdício.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="bc-icon">👩‍🌾</div>
+          <h3>Agricultura familiar</h3>
+          <p>O Programa Nacional de Biodiesel (PNPB) garante participação da agricultura familiar, gerando renda no campo.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="bc-icon">🔧</div>
+          <h3>Melhor lubrificação</h3>
+          <p>O biodiesel possui maior lubrificidade natural, reduzindo desgaste dos componentes do motor e prolongando sua vida útil.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       COMPARATIVO
+  ════════════════════════════════ -->
+  <section id="comparativo" class="content-section dark-section">
+    <div class="container">
+
+      <div class="section-header reveal">
+        <span class="tag">COMPARATIVO</span>
+        <h2>Biodiesel × Diesel Fóssil</h2>
+        <p>Uma comparação direta entre os dois combustíveis nos principais critérios ambientais, técnicos e econômicos.</p>
+      </div>
+
+      <div class="table-wrap reveal">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Critério</th>
+              <th class="col-fossil">🛢️ Diesel Fóssil</th>
+              <th class="col-bio">🌻 Biodiesel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Origem</td>
+              <td class="bad">Petróleo (não renovável)</td>
+              <td class="good">Oleaginosas (renovável)</td>
+            </tr>
+            <tr>
+              <td>Emissão de CO₂</td>
+              <td class="bad">Alta — referência 100%</td>
+              <td class="good">Até 78% menor</td>
+            </tr>
+            <tr>
+              <td>Material particulado</td>
+              <td class="bad">Alto — MP2,5</td>
+              <td class="good">Redução de ~47%</td>
+            </tr>
+            <tr>
+              <td>Teor de enxofre</td>
+              <td class="bad">Até 10 ppm (S10)</td>
+              <td class="good">Praticamente zero</td>
+            </tr>
+            <tr>
+              <td>Biodegradabilidade</td>
+              <td class="bad">Baixa / persistente</td>
+              <td class="good">Alta — 28 dias</td>
+            </tr>
+            <tr>
+              <td>Lubrificidade</td>
+              <td class="bad">Requer aditivos</td>
+              <td class="good">Natural e superior</td>
+            </tr>
+            <tr>
+              <td>Compatibilidade</td>
+              <td class="neutral">Motores diesel</td>
+              <td class="good">Mesmos motores diesel</td>
+            </tr>
+            <tr>
+              <td>Risco de derramamento</td>
+              <td class="bad">Alto impacto ambiental</td>
+              <td class="good">Baixo — biodegradável</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════
+       FOOTER
+  ════════════════════════════════ -->
+  <footer id="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">🌻 Biodiesel</div>
+      <p>Energia limpa, renovável e genuinamente brasileira.</p>
+        <p>Prof orientador: Gabriel Cezar da Silva</p>
+        <p>Aluno: Ryan Ribeiro Pereira de Souza</p>
+      <p class="footer-copy">© 2026 · Projeto educativo para o Agrinho</p>
+    </div>
+  </footer>
+
+  <!-- ════════════════════════════════
+       MODAL OVERLAY
+  ════════════════════════════════ -->
+  <div id="bio-overlay" role="dialog" aria-modal="true" aria-labelledby="bio-modal-title">
+    <div id="bio-modal">
+
+      <!-- Cabeçalho fixo -->
+      <header id="bio-modal-header">
+        <div id="bio-modal-brand">
+          <span>🌻</span>
+          <span id="bio-brand-text">Biodiesel no Paraná</span>
+        </div>
+        <button id="bio-close-btn" aria-label="Fechar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Corpo rolável -->
+      <div id="bio-modal-body">
+
+        <!-- Hero interno -->
+        <div id="bio-hero">
+          <p id="bio-hero-eyebrow">Energia Renovável · Paraná</p>
+          <h2 id="bio-modal-title">Do campo paranaense<br/>para o motor do Brasil</h2>
+          <p id="bio-hero-sub">O Paraná é um dos maiores produtores de biodiesel do país. Conheça essa cadeia que une agricultura, sustentabilidade e desenvolvimento econômico.</p>
+        </div>
+
+        <!-- Dados rápidos -->
+        <div id="bio-stats-row">
+          <div class="bio-stat">
+            <span class="bio-stat-num">B14</span>
+            <span class="bio-stat-label">Mistura obrigatória<br/>no diesel brasileiro</span>
+          </div>
+          <div class="bio-stat">
+            <span class="bio-stat-num">7bi L</span>
+            <span class="bio-stat-label">Produção nacional<br/>anual de biodiesel</span>
+          </div>
+          <div class="bio-stat">
+            <span class="bio-stat-num">78%</span>
+            <span class="bio-stat-label">Menos CO₂ vs<br/>diesel fóssil</span>
+          </div>
+          <div class="bio-stat">
+            <span class="bio-stat-num">1°</span>
+            <span class="bio-stat-label">Paraná no ranking<br/>de soja p/ biodiesel</span>
+          </div>
+        </div>
+
+        <!-- Cards de conteúdo -->
+        <div id="bio-cards">
+
+          <div class="bio-card">
+            <div class="bio-card-icon" style="--ci:#fdd835">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="bio-card-body">
+              <h3>Como o biodiesel é produzido no Paraná</h3>
+                <p>O Paraná é um dos principais produtores de biodiesel do Brasil. Grande parte da matéria-prima utilizada vem da soja cultivada pelos agricultores do estado. Após a colheita, o óleo é extraído dos grãos e enviado para <strong>usinas especializadas</strong>, onde passa por processos industriais que o transformam em biodiesel. Além do combustível renovável, a produção também gera subprodutos importantes, como a glicerina e o farelo de soja, que podem ser utilizados em diversos setores da economia.</p>
+            </div>
+          </div>
+
+          <div class="bio-card">
+            <div class="bio-card-icon" style="--ci:#43a047">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="M2 12h20"/></svg>
+            </div>
+            <div class="bio-card-body">
+              <h3>O Paraná como líder em biodiesel</h3>
+              <ol class="bio-steps">
+                <p>Nos últimos anos, o Paraná se consolidou como uma referência nacional na produção de biodiesel. O estado conta com grandes indústrias e investimentos bilionários que ampliam sua capacidade produtiva. Empresas paranaenses vêm expandindo suas instalações e modernizando seus processos, fortalecendo a economia regional e colocando o Paraná em posição de destaque no cenário brasileiro e internacional dos biocombustíveis.</p>
+              </ol>
+            </div>
+          </div>
+
+          <div id="bio-two-col">
+
+            <div class="bio-card">
+              <div class="bio-card-icon" style="--ci:#00e676">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 22c0-5.5 3-10.5 8-13 1.5 4-1 8-4 10 3-1 7-4 8-9 2 2.5 2 6 0 9 2-1 4-4 4-8 1.5 2 2 5 1 8"/></svg>
+              </div>
+              <div class="bio-card-body">
+                <h3>Benefícios para o Paraná</h3>
+                <ul class="bio-list">
+                 <p>A produção de biodiesel contribui para o crescimento econômico do Paraná, gera empregos e fortalece o agronegócio local. O setor também incentiva investimentos em pesquisa, tecnologia e infraestrutura, tornando o estado uma das principais referências brasileiras na produção de energia renovável. 🌱🚜⚡</p>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bio-card">
+              <div class="bio-card-icon" style="--ci:#fdd835">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="bio-card-body">
+                <h3>Impacto Econômico no PR</h3>
+                <ul class="bio-list">
+                  <li>🌾 Valoriza a <strong>soja paranaense</strong></li>
+                  <li>🤝 Fortalece <strong>C.Vale, Coopavel, Cocamar</strong></li>
+                  <li>👩‍🌾 Inclui a <strong>agricultura familiar</strong> (PNPB)</li>
+                  <li>🏭 Gera empregos nas <strong>usinas locais</strong></li>
+                  <li>💰 Reduz importação de diesel fóssil</li>
+                  <li>📈 Meta <strong>B20 até 2030</strong></li>
+                </ul>
+              </div>
+            </div>
+
+          </div><!-- /bio-two-col -->
+
+          <!-- Motivacional -->
+          <div id="bio-motivational">
+            <div id="bio-mot-icon">🌻</div>
+            <blockquote id="bio-mot-quote">
+              "Cada grão de soja plantada no Paraná carrega o potencial de mover caminhões, ônibus e tratores de forma mais limpa. O biodiesel não é apenas combustível — é a prova de que o campo brasileiro pode liderar a transição energética e garantir um futuro mais verde para as próximas gerações."
+            </blockquote>
+            <p id="bio-mot-source">— Programa Agrinho · Sustentabilidade e Futuro do Campo</p>
+          </div>
+
+        </div><!-- /bio-cards -->
+      </div><!-- /bio-modal-body -->
+
+      <!-- Rodapé fixo do modal -->
+      <footer id="bio-modal-footer">
+        <span id="bio-footer-text">🌿 Conteúdo educativo — Programa Agrinho · Paraná</span>
+        <button id="bio-close-btn-2">Fechar painel</button>
+      </footer>
+
+    </div><!-- /bio-modal -->
+  </div><!-- /bio-overlay -->
+
+</body>
+</html>

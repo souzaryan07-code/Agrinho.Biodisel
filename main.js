@@ -1,176 +1,159 @@
-/* ═══════════════════════════════════════════════════════════
-   main.js — Biodiesel Site Animations
-   Depends on: GSAP 3 + ScrollTrigger (loaded in HTML)
-═══════════════════════════════════════════════════════════ */
-
 gsap.registerPlugin(ScrollTrigger);
 
-/* ═════════════════════════════════
-   UTILS
-═════════════════════════════════ */
-const W = () => window.innerWidth;
-const H = () => window.innerHeight;
-const rand = (a, b) => Math.random() * (b - a) + a;
-const lerp = (a, b, t) => a + (b - a) * t;
+const getWindowWidth = () => window.innerWidth;
+const getWindowHeight = () => window.innerHeight;
+const getRandomNumber = (min, max) => Math.random() * (max - min) + min;
+const linearInterpolate = (start, end, factor) => start + (end - start) * factor;
 
-/* ═════════════════════════════════
-   NAVBAR: scroll class
-═════════════════════════════════ */
-const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 60);
-}, { passive: true });
+const initNavbarObserver = () => {
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+};
 
-/* ═════════════════════════════════
-   HERO CANVAS — floating particles + sunflower
-═════════════════════════════════ */
-(function heroCanvas() {
+const initializeHeroCanvas = () => {
   const canvas = document.getElementById('hero-canvas');
-  const ctx    = canvas.getContext('2d');
-  let W2, H2, particles = [];
+  const context = canvas.getContext('2d');
+  let canvasWidth, canvasHeight;
+  const particles = [];
 
-  function resize() {
-    W2 = canvas.width  = canvas.offsetWidth;
-    H2 = canvas.height = canvas.offsetHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
+  const handleResize = () => {
+    canvasWidth = canvas.width = canvas.offsetWidth;
+    canvasHeight = canvas.height = canvas.offsetHeight;
+  };
+  
+  handleResize();
+  window.addEventListener('resize', handleResize);
 
-  // floating pollen particles
   for (let i = 0; i < 60; i++) {
     particles.push({
-      x: rand(0, W2), y: rand(0, H2),
-      r: rand(1.5, 4),
-      vx: rand(-0.15, 0.15), vy: rand(-0.4, -0.1),
-      alpha: rand(0.2, 0.7),
+      x: getRandomNumber(0, canvasWidth),
+      y: getRandomNumber(0, canvasHeight),
+      r: getRandomNumber(1.5, 4),
+      vx: getRandomNumber(-0.15, 0.15),
+      vy: getRandomNumber(-0.4, -0.1),
+      alpha: getRandomNumber(0.2, 0.7),
       color: Math.random() > 0.5 ? '#fdd835' : '#a5d6a7'
     });
   }
 
-  // hero sunflower drawing
-  function drawSunflower(cx, cy, size) {
+  const renderSunflower = (cx, cy, size) => {
     const petalCount = 16;
-    const petalLen   = size * 0.52;
-    const petalW     = size * 0.18;
-    // petals
+    const petalLen = size * 0.52;
+    const petalW = size * 0.18;
+    
     for (let i = 0; i < petalCount; i++) {
       const angle = (i / petalCount) * Math.PI * 2;
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle);
-      const grad = ctx.createLinearGradient(0, 0, 0, -petalLen);
-      grad.addColorStop(0, '#f9a825');
-      grad.addColorStop(1, '#fdd835');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.ellipse(0, -petalLen * 0.55, petalW * 0.5, petalLen * 0.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      context.save();
+      context.translate(cx, cy);
+      context.rotate(angle);
+      const gradient = context.createLinearGradient(0, 0, 0, -petalLen);
+      gradient.addColorStop(0, '#f9a825');
+      gradient.addColorStop(1, '#fdd835');
+      context.fillStyle = gradient;
+      context.beginPath();
+      context.ellipse(0, -petalLen * 0.55, petalW * 0.5, petalLen * 0.5, 0, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
     }
-    // center dark disc
-    const cgrad = ctx.createRadialGradient(cx - size*0.08, cy - size*0.08, 0, cx, cy, size * 0.32);
-    cgrad.addColorStop(0, '#6d4c41');
-    cgrad.addColorStop(0.5, '#4e342e');
-    cgrad.addColorStop(1, '#3e2723');
-    ctx.beginPath();
-    ctx.arc(cx, cy, size * 0.32, 0, Math.PI * 2);
-    ctx.fillStyle = cgrad;
-    ctx.fill();
-    // seed pattern dots
-    ctx.fillStyle = 'rgba(255,255,255,0.07)';
+    
+    const centerGradient = context.createRadialGradient(cx - size*0.08, cy - size*0.08, 0, cx, cy, size * 0.32);
+    centerGradient.addColorStop(0, '#6d4c41');
+    centerGradient.addColorStop(0.5, '#4e342e');
+    centerGradient.addColorStop(1, '#3e2723');
+    context.beginPath();
+    context.arc(cx, cy, size * 0.32, 0, Math.PI * 2);
+    context.fillStyle = centerGradient;
+    context.fill();
+    
+    context.fillStyle = 'rgba(255,255,255,0.07)';
     for (let d = 0; d < 30; d++) {
-      const da = rand(0, Math.PI * 2);
-      const dr = rand(0, size * 0.28);
-      ctx.beginPath();
-      ctx.arc(cx + Math.cos(da)*dr, cy + Math.sin(da)*dr, rand(1, 2.5), 0, Math.PI*2);
-      ctx.fill();
+      const da = getRandomNumber(0, Math.PI * 2);
+      const dr = getRandomNumber(0, size * 0.28);
+      context.beginPath();
+      context.arc(cx + Math.cos(da)*dr, cy + Math.sin(da)*dr, getRandomNumber(1, 2.5), 0, Math.PI*2);
+      context.fill();
     }
-    // stem
-    ctx.strokeStyle = '#388e3c';
-    ctx.lineWidth   = size * 0.07;
-    ctx.lineCap     = 'round';
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + size * 0.35);
-    ctx.quadraticCurveTo(cx + size * 0.1, cy + size * 1.2, cx + size * 0.05, cy + size * 2.2);
-    ctx.stroke();
-    // leaves
-    ctx.fillStyle = '#2e7d32';
+    
+    context.strokeStyle = '#388e3c';
+    context.lineWidth = size * 0.07;
+    context.lineCap = 'round';
+    context.beginPath();
+    context.moveTo(cx, cy + size * 0.35);
+    context.quadraticCurveTo(cx + size * 0.1, cy + size * 1.2, cx + size * 0.05, cy + size * 2.2);
+    context.stroke();
+    
+    context.fillStyle = '#2e7d32';
     [[0.6, -0.4], [-0.5, 0.8]].forEach(([lx, ly]) => {
-      ctx.save();
-      ctx.translate(cx + lx * size * 0.12, cy + size * 0.9 + ly * size * 0.1);
-      ctx.rotate(lx > 0 ? 0.5 : -0.5);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, size * 0.28, size * 0.1, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      context.save();
+      context.translate(cx + lx * size * 0.12, cy + size * 0.9 + ly * size * 0.1);
+      context.rotate(lx > 0 ? 0.5 : -0.5);
+      context.beginPath();
+      context.ellipse(0, 0, size * 0.28, size * 0.1, 0, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
     });
-  }
+  };
 
   let sway = 0;
-  let raf;
+  let animationFrame;
 
-  function tick(ts) {
-    ctx.clearRect(0, 0, W2, H2);
-
-    // particles
-    particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.y < -10) { p.y = H2 + 10; p.x = rand(0, W2); }
-      ctx.globalAlpha = p.alpha;
-      ctx.fillStyle   = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
+  const animateHero = (timestamp) => {
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+    
+    particles.forEach(particle => {
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      if (particle.y < -10) { 
+        particle.y = canvasHeight + 10; 
+        particle.x = getRandomNumber(0, canvasWidth); 
+      }
+      context.globalAlpha = particle.alpha;
+      context.fillStyle = particle.color;
+      context.beginPath();
+      context.arc(particle.x, particle.y, particle.r, 0, Math.PI * 2);
+      context.fill();
     });
 
-    ctx.globalAlpha = 1;
-    sway = Math.sin(ts * 0.0006) * 0.025;
-    ctx.save();
-    ctx.translate(W2 / 2, H2 * 0.52);
-    ctx.rotate(sway);
-    drawSunflower(0, 0, Math.min(W2, H2) * 0.13);
-    ctx.restore();
+    context.globalAlpha = 1;
+    sway = Math.sin(timestamp * 0.0006) * 0.025;
+    context.save();
+    context.translate(canvasWidth / 2, canvasHeight * 0.52);
+    context.rotate(sway);
+    renderSunflower(0, 0, Math.min(canvasWidth, canvasHeight) * 0.13);
+    context.restore();
 
-    raf = requestAnimationFrame(tick);
-  }
-  raf = requestAnimationFrame(tick);
+    animationFrame = requestAnimationFrame(animateHero);
+  };
 
-  // stop when out of view
-  const heroEl = document.getElementById('hero');
-  const heroObs = new IntersectionObserver(([e]) => {
-    if (!e.isIntersecting) { cancelAnimationFrame(raf); }
-    else { raf = requestAnimationFrame(tick); }
+  animationFrame = requestAnimationFrame(animateHero);
+
+  const heroElement = document.getElementById('hero');
+  const intersectionObserver = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) { cancelAnimationFrame(animationFrame); }
+    else { animationFrame = requestAnimationFrame(animateHero); }
   });
-  heroObs.observe(heroEl);
-})();
+  intersectionObserver.observe(heroElement);
+};
 
-/* ═════════════════════════════════
-   SCENE CANVAS — sunflowers + seeds
-═════════════════════════════════ */
-(function sceneAnimation() {
-  const canvas  = document.getElementById('scene-canvas');
-  const ctx     = canvas.getContext('2d');
-  const section = document.getElementById('scene-section');
-  const sticky  = document.getElementById('scene-sticky');
-  const macWrap = document.getElementById('machine-wrap');
+const initializeSceneAnimation = () => {
+  const canvas = document.getElementById('scene-canvas');
+  const context = canvas.getContext('2d');
+  const stickyContainer = document.getElementById('scene-sticky');
+  const machineWrapper = document.getElementById('machine-wrap');
+  let canvasWidth, canvasHeight;
 
-  let CW, CH;
+  const handleResize = () => {
+    canvasWidth = canvas.width = canvas.offsetWidth;
+    canvasHeight = canvas.height = canvas.offsetHeight;
+  };
+  
+  handleResize();
+  window.addEventListener('resize', handleResize);
 
-  function resize() {
-    CW = canvas.width  = canvas.offsetWidth;
-    CH = canvas.height = canvas.offsetHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  /* ── Sunflower definitions ──
-     Each: {xFrac, yBot (px from bottom), sizeFrac, sway, phase}
-  */
-  const FIELD = [
-    // main hero (center, big)
+  const sunFlowerField = [
     { xFrac: 0.50, yBotFrac: 0.30, sizeFrac: 0.12,  isHero: true },
-    // left cluster
     { xFrac: 0.04, yBotFrac: 0.30, sizeFrac: 0.065 },
     { xFrac: 0.11, yBotFrac: 0.32, sizeFrac: 0.080 },
     { xFrac: 0.19, yBotFrac: 0.29, sizeFrac: 0.072 },
@@ -180,7 +163,6 @@ window.addEventListener('scroll', () => {
     { xFrac: 0.15, yBotFrac: 0.40, sizeFrac: 0.058 },
     { xFrac: 0.23, yBotFrac: 0.37, sizeFrac: 0.050 },
     { xFrac: 0.31, yBotFrac: 0.35, sizeFrac: 0.062 },
-    // right cluster
     { xFrac: 0.96, yBotFrac: 0.30, sizeFrac: 0.065 },
     { xFrac: 0.89, yBotFrac: 0.32, sizeFrac: 0.080 },
     { xFrac: 0.81, yBotFrac: 0.29, sizeFrac: 0.072 },
@@ -190,476 +172,527 @@ window.addEventListener('scroll', () => {
     { xFrac: 0.85, yBotFrac: 0.40, sizeFrac: 0.058 },
     { xFrac: 0.77, yBotFrac: 0.37, sizeFrac: 0.050 },
     { xFrac: 0.69, yBotFrac: 0.35, sizeFrac: 0.062 },
-    // extras center
     { xFrac: 0.43, yBotFrac: 0.36, sizeFrac: 0.055 },
     { xFrac: 0.57, yBotFrac: 0.36, sizeFrac: 0.055 },
   ];
 
-  // add runtime props
-  FIELD.forEach((f, i) => {
-    f.phase   = rand(0, Math.PI * 2);
-    f.swayAmp = rand(0.018, 0.04);
-    f.swaySpd = rand(0.0004, 0.0008);
-    f.alpha   = 0;
-    f.scale   = f.isHero ? 1 : 0;
-    f.id      = i;
+  sunFlowerField.forEach((fieldItem, index) => {
+    fieldItem.phase = getRandomNumber(0, Math.PI * 2);
+    fieldItem.swayAmp = getRandomNumber(0.018, 0.04);
+    fieldItem.swaySpd = getRandomNumber(0.0004, 0.0008);
+    fieldItem.alpha = 0;
+    fieldItem.scale = fieldItem.isHero ? 1 : 0;
+    fieldItem.id = index;
   });
 
-  /* ── Seed particles ── */
-  const seeds = [];
-  let seedsReleased = false;
+  const seedsArray = [];
+  let seedsReleasedState = false;
 
-  function releaseSeed(sf) {
-    const x = sf.xFrac * CW;
-    const y = CH - sf.yBotFrac * CH;
-    seeds.push({
-      x, y,
-      vx: rand(-1.5, 1.5),
-      vy: rand(-2.5, -1),
+  const spawnSeedParticle = (sourceFlower) => {
+    const startX = sourceFlower.xFrac * canvasWidth;
+    const startY = canvasHeight - sourceFlower.yBotFrac * canvasHeight;
+    seedsArray.push({
+      x: startX, y: startY,
+      vx: getRandomNumber(-1.5, 1.5),
+      vy: getRandomNumber(-2.5, -1),
       gravity: 0.06,
       alpha: 1,
-      r: rand(3, 5.5),
-      angle: rand(0, Math.PI * 2),
-      spin:  rand(-0.08, 0.08),
+      r: getRandomNumber(3, 5.5),
+      angle: getRandomNumber(0, Math.PI * 2),
+      spin: getRandomNumber(-0.08, 0.08),
       done: false,
-      tx: null, ty: null, // target set later
+      tx: null, ty: null,
       phase: 'launch'
     });
-  }
+  };
 
-  function setMachineTarget() {
-    const rect = macWrap.getBoundingClientRect();
-    const sRect = sticky.getBoundingClientRect();
+  const calculateMachineTarget = () => {
+    const wrapRect = machineWrapper.getBoundingClientRect();
+    const stickyRect = stickyContainer.getBoundingClientRect();
     return {
-      tx: rect.left - sRect.left + rect.width * 0.38,
-      ty: rect.top  - sRect.top  + rect.height * 0.25
+      tx: wrapRect.left - stickyRect.left + wrapRect.width * 0.38,
+      ty: wrapRect.top - stickyRect.top + wrapRect.height * 0.25
     };
-  }
+  };
 
-  /* ── Draw one sunflower ── */
-  function drawSF(ctx, cx, cy, size, alpha, scale) {
+  const drawSceneSunflower = (drawingContext, cx, cy, size, alpha, scale) => {
     if (alpha <= 0.01 || scale <= 0.01) return;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.translate(cx, cy);
-    ctx.scale(scale, scale);
+    drawingContext.save();
+    drawingContext.globalAlpha = alpha;
+    drawingContext.translate(cx, cy);
+    drawingContext.scale(scale, scale);
 
     const petalCount = 14;
-    const petalLen   = size * 0.5;
+    const petalLen = size * 0.5;
 
-    // petals
     for (let i = 0; i < petalCount; i++) {
-      const a = (i / petalCount) * Math.PI * 2;
-      ctx.save();
-      ctx.rotate(a);
-      const g = ctx.createLinearGradient(0, 0, 0, -petalLen);
-      g.addColorStop(0, '#f9a825');
-      g.addColorStop(0.6, '#fdd835');
-      g.addColorStop(1, '#fff176');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.ellipse(0, -petalLen * 0.55, size * 0.1, petalLen * 0.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      const angle = (i / petalCount) * Math.PI * 2;
+      drawingContext.save();
+      drawingContext.rotate(angle);
+      const grad = drawingContext.createLinearGradient(0, 0, 0, -petalLen);
+      grad.addColorStop(0, '#f9a825');
+      grad.addColorStop(0.6, '#fdd835');
+      grad.addColorStop(1, '#fff176');
+      drawingContext.fillStyle = grad;
+      drawingContext.beginPath();
+      drawingContext.ellipse(0, -petalLen * 0.55, size * 0.1, petalLen * 0.5, 0, 0, Math.PI * 2);
+      drawingContext.fill();
+      drawingContext.restore();
     }
 
-    // center
-    const cg = ctx.createRadialGradient(-size*0.06, -size*0.06, 0, 0, 0, size * 0.3);
-    cg.addColorStop(0, '#6d4c41');
-    cg.addColorStop(0.7, '#4e342e');
-    cg.addColorStop(1, '#3e2723');
-    ctx.beginPath();
-    ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
-    ctx.fillStyle = cg;
-    ctx.fill();
+    const centerGrad = drawingContext.createRadialGradient(-size*0.06, -size*0.06, 0, 0, 0, size * 0.3);
+    centerGrad.addColorStop(0, '#6d4c41');
+    centerGrad.addColorStop(0.7, '#4e342e');
+    centerGrad.addColorStop(1, '#3e2723');
+    drawingContext.beginPath();
+    drawingContext.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+    drawingContext.fillStyle = centerGrad;
+    drawingContext.fill();
 
-    // subtle seed spiral hints
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    drawingContext.fillStyle = 'rgba(255,255,255,0.06)';
     for (let d = 0; d < 20; d++) {
-      const da = rand(0, Math.PI * 2);
-      const dr = rand(0, size * 0.26);
-      ctx.beginPath();
-      ctx.arc(Math.cos(da)*dr, Math.sin(da)*dr, rand(1, 2), 0, Math.PI*2);
-      ctx.fill();
+      const da = getRandomNumber(0, Math.PI * 2);
+      const dr = getRandomNumber(0, size * 0.26);
+      drawingContext.beginPath();
+      drawingContext.arc(Math.cos(da)*dr, Math.sin(da)*dr, getRandomNumber(1, 2), 0, Math.PI*2);
+      drawingContext.fill();
     }
 
-    // stem
-    ctx.strokeStyle = '#388e3c';
-    ctx.lineWidth   = Math.max(3, size * 0.08);
-    ctx.lineCap     = 'round';
-    ctx.beginPath();
-    ctx.moveTo(0, size * 0.32);
-    ctx.quadraticCurveTo(size * 0.08, size * 1.3, size * 0.04, size * 2.1);
-    ctx.stroke();
+    drawingContext.strokeStyle = '#388e3c';
+    drawingContext.lineWidth = Math.max(3, size * 0.08);
+    drawingContext.lineCap = 'round';
+    drawingContext.beginPath();
+    drawingContext.moveTo(0, size * 0.32);
+    drawingContext.quadraticCurveTo(size * 0.08, size * 1.3, size * 0.04, size * 2.1);
+    drawingContext.stroke();
 
-    // 2 leaves
-    ctx.fillStyle = '#2e7d32';
+    drawingContext.fillStyle = '#2e7d32';
     [[1, 0.9, 0.45], [-1, 1.3, -0.4]].forEach(([dir, stemY, ang]) => {
-      ctx.save();
-      ctx.translate(dir * size * 0.05, size * stemY);
-      ctx.rotate(ang);
-      ctx.beginPath();
-      ctx.ellipse(0, 0, size * 0.32, size * 0.1, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      drawingContext.save();
+      drawingContext.translate(dir * size * 0.05, size * stemY);
+      drawingContext.rotate(ang);
+      drawingContext.beginPath();
+      drawingContext.ellipse(0, 0, size * 0.32, size * 0.1, 0, 0, Math.PI * 2);
+      drawingContext.fill();
+      drawingContext.restore();
     });
 
-    ctx.restore();
-  }
+    drawingContext.restore();
+  };
 
-  /* ── State driven by scroll progress (0→1) ── */
-  let progress = 0;
+  let currentProgress = 0;
 
-  // GSAP ScrollTrigger drives `progress`
-  ScrollTrigger.create({
-    trigger: '#scene-section',
-    start: 'top top',
-    end:   'bottom bottom',
-    scrub: 1.8,
-    onUpdate(self) {
-      progress = self.progress;
-      updateScene(progress);
-    }
-  });
-
-  function updateScene(p) {
-    /* Hero SF: visible from 0, scales out by 0.2 */
-    const hero = FIELD[0];
-    if (p < 0.15) {
-      hero.alpha = 1;
-      hero.scale = lerp(1, 0.55, p / 0.15);
+  const updateScrollScene = (progressAmount) => {
+    const heroFlower = sunFlowerField[0];
+    if (progressAmount < 0.15) {
+      heroFlower.alpha = 1;
+      heroFlower.scale = linearInterpolate(1, 0.55, progressAmount / 0.15);
     } else {
-      hero.alpha = lerp(1, 0.3, (p - 0.15) / 0.15);
-      hero.scale = 0.55;
+      heroFlower.alpha = linearInterpolate(1, 0.3, (progressAmount - 0.15) / 0.15);
+      heroFlower.scale = 0.55;
     }
 
-    /* Field SFs: stagger in from p=0.10 to p=0.55 */
-    FIELD.slice(1).forEach((f, i) => {
-      const start = 0.10 + i * 0.022;
-      const end   = start + 0.08;
-      f.alpha = Math.min(1, Math.max(0, (p - start) / (end - start)));
-      f.scale = f.alpha;
+    sunFlowerField.slice(1).forEach((fieldItem, index) => {
+      const start = 0.10 + index * 0.022;
+      const end = start + 0.08;
+      fieldItem.alpha = Math.min(1, Math.max(0, (progressAmount - start) / (end - start)));
+      fieldItem.scale = fieldItem.alpha;
     });
 
-    /* Seeds: release at p=0.55 */
-    if (p >= 0.54 && !seedsReleased) {
-      seedsReleased = true;
-      FIELD.forEach(f => {
-        const count = f.isHero ? 6 : 2;
+    if (progressAmount >= 0.54 && !seedsReleasedState) {
+      seedsReleasedState = true;
+      sunFlowerField.forEach(fieldItem => {
+        const count = fieldItem.isHero ? 6 : 2;
         for (let k = 0; k < count; k++) {
-          setTimeout(() => releaseSeed(f), rand(0, 600));
+          setTimeout(() => spawnSeedParticle(fieldItem), getRandomNumber(0, 600));
         }
       });
     }
 
-    /* Machine */
-    if (p >= 0.52) {
-      const mp = Math.min(1, (p - 0.52) / 0.10);
-      gsap.set('#machine-wrap', { opacity: mp, y: lerp(40, 0, mp) });
+    if (progressAmount >= 0.52) {
+      const machineProgress = Math.min(1, (progressAmount - 0.52) / 0.10);
+      gsap.set('#machine-wrap', { opacity: machineProgress, y: linearInterpolate(40, 0, machineProgress) });
     } else {
       gsap.set('#machine-wrap', { opacity: 0, y: 40 });
     }
 
-    /* Machine liquid */
-    if (p >= 0.62) {
-      const lp = Math.min(1, (p - 0.62) / 0.12);
-      document.getElementById('machine-liquid').setAttribute('width', lp * 96);
-      document.getElementById('liquid-dot').setAttribute('opacity', lp > 0.8 ? (lp - 0.8) * 5 : 0);
-      document.getElementById('smoke-a').setAttribute('opacity', lp * 0.7);
-      document.getElementById('smoke-b').setAttribute('opacity', lp * 0.5);
+    if (progressAmount >= 0.62) {
+      const liquidProgress = Math.min(1, (progressAmount - 0.62) / 0.12);
+      document.getElementById('machine-liquid').setAttribute('width', liquidProgress * 96);
+      document.getElementById('liquid-dot').setAttribute('opacity', liquidProgress > 0.8 ? (liquidProgress - 0.8) * 5 : 0);
+      document.getElementById('smoke-a').setAttribute('opacity', liquidProgress * 0.7);
+      document.getElementById('smoke-b').setAttribute('opacity', liquidProgress * 0.5);
     }
 
-    /* Pipe */
-    if (p >= 0.66) {
-      const pp = Math.min(1, (p - 0.66) / 0.14);
-      gsap.set('#pipe-svg', { opacity: pp });
-      document.getElementById('pipe-liquid').setAttribute('width', pp * 1400);
-      document.getElementById('pipe-shine').setAttribute('width', pp * 1400);
+    if (progressAmount >= 0.66) {
+      const pipeProgress = Math.min(1, (progressAmount - 0.66) / 0.14);
+      gsap.set('#pipe-svg', { opacity: pipeProgress });
+      document.getElementById('pipe-liquid').setAttribute('width', pipeProgress * 1400);
+      document.getElementById('pipe-shine').setAttribute('width', pipeProgress * 1400);
     } else {
       gsap.set('#pipe-svg', { opacity: 0 });
     }
 
-    /* Truck */
-    if (p >= 0.68) {
-      const tp = Math.min(1, (p - 0.68) / 0.14);
-      const rightPx = lerp(-500, W() * 0.02, tp);
-      gsap.set('#truck-wrap', { opacity: tp, right: rightPx });
+    if (progressAmount >= 0.68) {
+      const truckProgress = Math.min(1, (progressAmount - 0.68) / 0.14);
+      const rightPx = linearInterpolate(-500, getWindowWidth() * 0.02, truckProgress);
+      gsap.set('#truck-wrap', { opacity: truckProgress, right: rightPx });
     } else {
       gsap.set('#truck-wrap', { opacity: 0, right: -500 });
     }
 
-    /* Tank fill */
-    if (p >= 0.78) {
-      const tfp = Math.min(1, (p - 0.78) / 0.10);
-      document.getElementById('tank-fill').setAttribute('opacity', tfp * 0.9);
-      document.getElementById('tank-shine').setAttribute('opacity', tfp * 0.8);
-      document.getElementById('tank-label').setAttribute('opacity', tfp);
-      document.getElementById('tank-sub').setAttribute('opacity', tfp);
+    if (progressAmount >= 0.78) {
+      const tankFillProgress = Math.min(1, (progressAmount - 0.78) / 0.10);
+      document.getElementById('tank-fill').setAttribute('opacity', tankFillProgress * 0.9);
+      document.getElementById('tank-shine').setAttribute('opacity', tankFillProgress * 0.8);
+      document.getElementById('tank-label').setAttribute('opacity', tankFillProgress);
+      document.getElementById('tank-sub').setAttribute('opacity', tankFillProgress);
     }
 
-    /* Final reveal */
-    if (p >= 0.87) {
-      const fp = Math.min(1, (p - 0.87) / 0.13);
-      const reveal = document.getElementById('final-reveal');
-      reveal.style.opacity       = fp;
-      reveal.style.pointerEvents = fp > 0.1 ? 'all' : 'none';
-      const fw  = Math.min(1, (p - 0.89) / 0.10);
-      const ftg = Math.min(1, (p - 0.88) / 0.06);
-      const fd  = Math.min(1, (p - 0.91) / 0.07);
-      const fc  = Math.min(1, (p - 0.93) / 0.07);
-      gsap.set('#final-tag',  { opacity: ftg, y: lerp(20, 0, ftg) });
-      gsap.set('#final-word', { opacity: fw,  scale: lerp(0.4, 1, fw) });
-      gsap.set('#final-desc', { opacity: fd });
-      gsap.set('#final-cta',  { opacity: fc });
+    if (progressAmount >= 0.87) {
+      const finalProgress = Math.min(1, (progressAmount - 0.87) / 0.13);
+      const revealContainer = document.getElementById('final-reveal');
+      revealContainer.style.opacity = finalProgress;
+      revealContainer.style.pointerEvents = finalProgress > 0.1 ? 'all' : 'none';
+      const wordProgress = Math.min(1, (progressAmount - 0.89) / 0.10);
+      const tagProgress = Math.min(1, (progressAmount - 0.88) / 0.06);
+      const descProgress = Math.min(1, (progressAmount - 0.91) / 0.07);
+      const ctaProgress = Math.min(1, (progressAmount - 0.93) / 0.07);
+      gsap.set('#final-tag',  { opacity: tagProgress, y: linearInterpolate(20, 0, tagProgress) });
+      gsap.set('#final-word', { opacity: wordProgress, scale: linearInterpolate(0.4, 1, wordProgress) });
+      gsap.set('#final-desc', { opacity: descProgress });
+      gsap.set('#final-cta',  { opacity: ctaProgress });
     } else {
       gsap.set('#final-reveal', { opacity: 0, pointerEvents: 'none' });
     }
-  }
+  };
 
-  /* ── Seed: set target once machine is visible ── */
-  let macTarget = null;
-
-  function updateSeeds(ts) {
-    if (!macTarget && macWrap.getBoundingClientRect().width > 0) {
-      macTarget = setMachineTarget();
+  ScrollTrigger.create({
+    trigger: '#scene-section',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 1.8,
+    onUpdate(instance) {
+      currentProgress = instance.progress;
+      updateScrollScene(currentProgress);
     }
-    seeds.forEach(s => {
-      if (s.done) return;
-      if (s.phase === 'launch') {
-        s.vy += s.gravity;
-        s.x  += s.vx;
-        s.y  += s.vy;
-        // after 40 frames arc toward machine
-        if (macTarget && s.vy > 0.5) {
-          s.phase = 'fly';
+  });
+
+  let machineTargetCoords = null;
+
+  const updateSeedParticles = () => {
+    if (!machineTargetCoords && machineWrapper.getBoundingClientRect().width > 0) {
+      machineTargetCoords = calculateMachineTarget();
+    }
+    seedsArray.forEach(seed => {
+      if (seed.done) return;
+      if (seed.phase === 'launch') {
+        seed.vy += seed.gravity;
+        seed.x += seed.vx;
+        seed.y += seed.vy;
+        if (machineTargetCoords && seed.vy > 0.5) {
+          seed.phase = 'fly';
         }
-      } else if (s.phase === 'fly' && macTarget) {
-        const dx = macTarget.tx - s.x;
-        const dy = macTarget.ty - s.y;
+      } else if (seed.phase === 'fly' && machineTargetCoords) {
+        const dx = machineTargetCoords.tx - seed.x;
+        const dy = machineTargetCoords.ty - seed.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
         if (dist < 12) {
-          s.done  = true;
-          s.alpha = 0;
+          seed.done = true;
+          seed.alpha = 0;
           return;
         }
-        const spd = Math.min(8, dist * 0.07);
-        s.vx = lerp(s.vx, (dx / dist) * spd, 0.08);
-        s.vy = lerp(s.vy, (dy / dist) * spd, 0.08);
-        s.x += s.vx;
-        s.y += s.vy;
-        s.alpha = Math.min(1, dist / 120);
+        const speed = Math.min(8, dist * 0.07);
+        seed.vx = linearInterpolate(seed.vx, (dx / dist) * speed, 0.08);
+        seed.vy = linearInterpolate(seed.vy, (dy / dist) * speed, 0.08);
+        seed.x += seed.vx;
+        seed.y += seed.vy;
+        seed.alpha = Math.min(1, dist / 120);
       }
-      s.angle += s.spin;
+      seed.angle += seed.spin;
     });
-  }
+  };
 
-  /* ── Main canvas render loop ── */
-  function drawSeeds(ctx) {
-    seeds.forEach(s => {
-      if (s.done || s.alpha <= 0.01) return;
-      ctx.save();
-      ctx.globalAlpha = s.alpha;
-      ctx.translate(s.x, s.y);
-      ctx.rotate(s.angle);
-      // seed shape
-      const sg = ctx.createLinearGradient(-s.r, -s.r*1.6, s.r, s.r*1.6);
-      sg.addColorStop(0, '#6d4c41');
-      sg.addColorStop(1, '#3e2723');
-      ctx.fillStyle = sg;
-      ctx.shadowColor = 'rgba(253,216,53,0.5)';
-      ctx.shadowBlur  = 6;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, s.r * 0.55, s.r * 1.1, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+  const renderSeedParticles = (drawingContext) => {
+    seedsArray.forEach(seed => {
+      if (seed.done || seed.alpha <= 0.01) return;
+      drawingContext.save();
+      drawingContext.globalAlpha = seed.alpha;
+      drawingContext.translate(seed.x, seed.y);
+      drawingContext.rotate(seed.angle);
+      
+      const seedGradient = drawingContext.createLinearGradient(-seed.r, -seed.r*1.6, seed.r, seed.r*1.6);
+      seedGradient.addColorStop(0, '#6d4c41');
+      seedGradient.addColorStop(1, '#3e2723');
+      drawingContext.fillStyle = seedGradient;
+      drawingContext.shadowColor = 'rgba(253,216,53,0.5)';
+      drawingContext.shadowBlur = 6;
+      drawingContext.beginPath();
+      drawingContext.ellipse(0, 0, seed.r * 0.55, seed.r * 1.1, 0, 0, Math.PI * 2);
+      drawingContext.fill();
+      drawingContext.restore();
     });
-  }
+  };
 
-  let lastTs = 0;
-  function render(ts) {
-    ctx.clearRect(0, 0, CW, CH);
-    const t = ts;
-
-    FIELD.forEach(f => {
-      const cx  = f.xFrac * CW;
-      const cy  = CH - f.yBotFrac * CH;
-      const sz  = (f.sizeFrac * Math.min(CW, CH));
-      const sway = Math.sin(t * f.swaySpd + f.phase) * f.swayAmp;
-      ctx.save();
-      ctx.translate(cx, cy + sz * 2.1);
-      ctx.rotate(sway);
-      ctx.translate(-cx, -(cy + sz * 2.1));
-      drawSF(ctx, cx, cy, sz, f.alpha, f.scale);
-      ctx.restore();
+  const animateScene = (timestamp) => {
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+    
+    sunFlowerField.forEach(fieldItem => {
+      const cx = fieldItem.xFrac * canvasWidth;
+      const cy = canvasHeight - fieldItem.yBotFrac * canvasHeight;
+      const size = (fieldItem.sizeFrac * Math.min(canvasWidth, canvasHeight));
+      const sway = Math.sin(timestamp * fieldItem.swaySpd + fieldItem.phase) * fieldItem.swayAmp;
+      context.save();
+      context.translate(cx, cy + size * 2.1);
+      context.rotate(sway);
+      context.translate(-cx, -(cy + size * 2.1));
+      drawSceneSunflower(context, cx, cy, size, fieldItem.alpha, fieldItem.scale);
+      context.restore();
     });
 
-    updateSeeds(ts);
-    drawSeeds(ctx);
+    updateSeedParticles();
+    renderSeedParticles(context);
 
-    requestAnimationFrame(render);
-  }
-  requestAnimationFrame(render);
+    requestAnimationFrame(animateScene);
+  };
+  requestAnimationFrame(animateScene);
 
-  /* Gear spin (CSS-independent, direct DOM) */
-  let gearAngle = 0;
-  function spinGears() {
-    gearAngle += 0.8;
-    const g1 = document.getElementById('gear-big');
-    const g2 = document.getElementById('gear-small');
-    if (g1) g1.style.transform = `rotate(${gearAngle}deg)`;
-    if (g2) g2.style.transform = `rotate(${-gearAngle * 1.5}deg)`;
-    requestAnimationFrame(spinGears);
-  }
-  spinGears();
-})();
+  let currentGearAngle = 0;
+  const animateMachineGears = () => {
+    currentGearAngle += 0.8;
+    const gearLarge = document.getElementById('gear-big');
+    const gearSmall = document.getElementById('gear-small');
+    if (gearLarge) gearLarge.style.transform = `rotate(${currentGearAngle}deg)`;
+    if (gearSmall) gearSmall.style.transform = `rotate(${-currentGearAngle * 1.5}deg)`;
+    requestAnimationFrame(animateMachineGears);
+  };
+  animateMachineGears();
+};
 
-/* ═════════════════════════════════
-   REVEAL ON SCROLL (info sections)
-═════════════════════════════════ */
-(function revealObserver() {
-  const items = document.querySelectorAll('.reveal');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach((e, idx) => {
-      if (e.isIntersecting) {
-        // stagger children if grid
-        const delay = Array.from(e.target.parentElement?.children || [])
-          .indexOf(e.target) * 80;
-        setTimeout(() => e.target.classList.add('visible'), delay);
-        obs.unobserve(e.target);
+const initializeScrollReveal = () => {
+  const elementsToReveal = document.querySelectorAll('.reveal');
+  const visibilityObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const delay = Array.from(entry.target.parentElement?.children || [])
+          .indexOf(entry.target) * 80;
+        setTimeout(() => entry.target.classList.add('visible'), delay);
+        visibilityObserver.unobserve(entry.target);
       }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  items.forEach(el => obs.observe(el));
-})();
+  elementsToReveal.forEach(el => visibilityObserver.observe(el));
+};
 
-/* ═════════════════════════════════
-   HERO text entrance
-═════════════════════════════════ */
-(function heroEntrance() {
-  const tl = gsap.timeline({ delay: 0.3 });
-  tl.from('.hero-eyebrow', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' })
+const animateHeroEntrance = () => {
+  const timeline = gsap.timeline({ delay: 0.3 });
+  timeline.from('.hero-eyebrow', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' })
     .from('#hero-heading',  { y: 40, opacity: 0, duration: 0.9, ease: 'power3.out' }, '-=0.4')
     .from('.hero-sub',      { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.5')
     .from('#scroll-arrow',  { opacity: 0, duration: 0.6 }, '-=0.2');
-})();
+};
 
-/* ═════════════════════════════════════════════════════════
-   MODAL — Biodiesel no Paraná
-═════════════════════════════════════════════════════════ */
-(function bioModal() {
-  const overlay   = document.getElementById('bio-overlay');
-  const modal     = document.getElementById('bio-modal');
-  const openBtn   = document.getElementById('modal-open-btn');
-  const closeBtn1 = document.getElementById('bio-close-btn');
-  const closeBtn2 = document.getElementById('bio-close-btn-2');
+const initializeModal = () => {
+  const modalOverlay = document.getElementById('bio-overlay');
+  const modalContainer = document.getElementById('bio-modal');
+  const openButton = document.getElementById('modal-open-btn');
+  const closeButton1 = document.getElementById('bio-close-btn');
+  const closeButton2 = document.getElementById('bio-close-btn-2');
 
-  if (!overlay || !openBtn) return;
+  if (!modalOverlay || !openButton) return;
 
-  /* ── Bloquear / liberar scroll da página ── */
-  let savedScrollY = 0;
+  let savedBodyScrollY = 0;
 
-  function lockScroll() {
-    savedScrollY = window.scrollY;
-    document.body.style.overflow   = 'hidden';
-    document.body.style.position   = 'fixed';
-    document.body.style.top        = `-${savedScrollY}px`;
-    document.body.style.width      = '100%';
-  }
+  const lockBodyScroll = () => {
+    savedBodyScrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${savedBodyScrollY}px`;
+    document.body.style.width = '100%';
+  };
 
-  function unlockScroll() {
-    document.body.style.overflow  = '';
-    document.body.style.position  = '';
-    document.body.style.top       = '';
-    document.body.style.width     = '';
-    window.scrollTo(0, savedScrollY);
-  }
+  const unlockBodyScroll = () => {
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedBodyScrollY);
+  };
 
-  /* ── Abrir ── */
-  function openModal() {
-    overlay.removeAttribute('hidden');
-    lockScroll();
+  const openInformationModal = () => {
+    modalOverlay.removeAttribute('hidden');
+    openButton.setAttribute('aria-expanded', 'true');
+    lockBodyScroll();
 
-    /* dois rAFs garantem que o display mude antes da transição CSS disparar */
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        overlay.classList.add('bio-open');
+        modalOverlay.classList.add('bio-open');
       });
     });
 
-    /* rolar o painel interno pro topo */
-    const body = document.getElementById('bio-modal-body');
-    if (body) body.scrollTop = 0;
+    const modalBody = document.getElementById('bio-modal-body');
+    if (modalBody) modalBody.scrollTop = 0;
 
-    /* foco acessível */
     setTimeout(() => {
-      if (closeBtn1) closeBtn1.focus();
+      if (closeButton1) closeButton1.focus();
     }, 80);
 
-    /* animar os cards em cascata */
-    setTimeout(animateCards, 160);
-  }
+    setTimeout(animateModalCards, 160);
+  };
 
-  /* ── Fechar ── */
-  function closeModal() {
-    overlay.classList.remove('bio-open');
-    unlockScroll();
+  const closeInformationModal = () => {
+    modalOverlay.classList.remove('bio-open');
+    openButton.setAttribute('aria-expanded', 'false');
+    unlockBodyScroll();
 
-    /* aguarda a transição terminar para ocultar com display:none */
-    overlay.addEventListener('transitionend', function handler(e) {
-      if (e.target !== overlay) return;
-      overlay.setAttribute('hidden', '');
-      overlay.removeEventListener('transitionend', handler);
-    });
+    const transitionHandler = (event) => {
+      if (event.target !== modalOverlay) return;
+      modalOverlay.setAttribute('hidden', '');
+      modalOverlay.removeEventListener('transitionend', transitionHandler);
+    };
+    modalOverlay.addEventListener('transitionend', transitionHandler);
+    openButton.focus();
+  };
 
-    openBtn.focus();
-  }
-
-  /* ── Animar cards em cascata ── */
-  function animateCards() {
-    const items = modal.querySelectorAll('.bio-stat, .bio-card, #bio-motivational');
-    items.forEach((el, i) => {
-      el.style.opacity   = '0';
-      el.style.transform = 'translateY(24px)';
-      el.style.transition = 'none';
+  const animateModalCards = () => {
+    const cardElements = modalContainer.querySelectorAll('.bio-stat, .bio-card, #bio-motivational');
+    cardElements.forEach((element, index) => {
+      element.style.opacity = '0';
+      element.style.transform = 'translateY(24px)';
+      element.style.transition = 'none';
       setTimeout(() => {
-        el.style.transition = `opacity 0.5s ease ${i * 65}ms, transform 0.5s cubic-bezier(.16,1,.3,1) ${i * 65}ms`;
-        el.style.opacity   = '1';
-        el.style.transform = 'translateY(0)';
+        element.style.transition = `opacity 0.5s ease ${index * 65}ms, transform 0.5s cubic-bezier(.16,1,.3,1) ${index * 65}ms`;
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
       }, 20);
     });
-  }
+  };
 
-  /* ── Trap de foco (acessibilidade) ── */
-  overlay.addEventListener('keydown', function (e) {
-    if (e.key !== 'Tab') return;
-    const focusable = Array.from(
-      modal.querySelectorAll('button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])')
+  modalOverlay.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+    const focusableElements = Array.from(
+      modalContainer.querySelectorAll('button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])')
     ).filter(el => el.offsetParent !== null);
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last  = focusable[focusable.length - 1];
-    if (e.shiftKey) {
-      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    if (!focusableElements.length) return;
+    
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    if (event.shiftKey) {
+      if (document.activeElement === firstElement) { 
+        event.preventDefault(); 
+        lastElement.focus(); 
+      }
     } else {
-      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+      if (document.activeElement === lastElement) { 
+        event.preventDefault(); 
+        firstElement.focus(); 
+      }
     }
   });
 
-  /* ── Eventos ── */
-  openBtn.addEventListener('click', openModal);
-  closeBtn1.addEventListener('click', closeModal);
-  if (closeBtn2) closeBtn2.addEventListener('click', closeModal);
+  openButton.addEventListener('click', openInformationModal);
+  closeButton1.addEventListener('click', closeInformationModal);
+  if (closeButton2) closeButton2.addEventListener('click', closeInformationModal);
 
-  /* clicar fora do painel (no overlay escuro) fecha */
-  overlay.addEventListener('click', function (e) {
-    if (e.target === overlay) closeModal();
+  modalOverlay.addEventListener('click', (event) => {
+    if (event.target === modalOverlay) closeInformationModal();
   });
 
-  /* ESC fecha */
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && overlay.classList.contains('bio-open')) closeModal();
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modalOverlay.classList.contains('bio-open')) {
+      closeInformationModal();
+    }
   });
 
-  /* iniciar oculto */
-  overlay.setAttribute('hidden', '');
-})();
+  modalOverlay.setAttribute('hidden', '');
+};
+
+initNavbarObserver();
+initializeHeroCanvas();
+initializeSceneAnimation();
+initializeScrollReveal();
+animateHeroEntrance();
+initializeModal();
+        
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("sidebar-toggle-btn");
+  const closeBtn = document.getElementById("sidebar-close-btn");
+  const sidebar = document.getElementById("custom-sidebar");
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+  const litersInput = document.getElementById("calc-liters");
+
+  let leafletMap = null;
+
+  const pontosBiodieselPR = [
+    { coords: [-25.4296, -49.2719], desc: "<strong>Curitiba</strong>" },
+    { coords: [-24.9578, -53.4589], desc: "<strong>Cascavel (Coopavel)</strong>" },
+    { coords: [-23.4210, -51.9331], desc: "<strong>Maringá (Cocamar)</strong>" },
+    { coords: [-24.2834, -53.8392], desc: "<strong>Palotina (C.Vale)</strong>" },
+    { coords: [-25.5919, -49.4103], desc: "<strong>Araucária</strong>" }
+  ];
+
+  function initParanaMap() {
+    if (leafletMap) return;
+
+    leafletMap = L.map('mapa-pr', { attributionControl: false }).setView([-24.6000, -51.5000], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
+
+    pontosBiodieselPR.forEach(ponto => {
+      L.marker(ponto.coords).addTo(leafletMap).bindPopup(ponto.desc);
+    });
+  }
+
+  function calcularEmissoes() {
+    const litros = parseFloat(litersInput.value) || 0;
+    const emissaoDiesel = litros * 2.67;
+    const emissaoBiodiesel = emissaoDiesel * 0.22;
+    const salvo = emissaoDiesel - emissaoBiodiesel;
+
+    document.getElementById("res-diesel").innerText = `${emissaoDiesel.toFixed(1)} kg CO₂`;
+    document.getElementById("res-biodiesel").innerText = `${emissaoBiodiesel.toFixed(1)} kg CO₂`;
+    document.getElementById("res-saved").innerText = `${salvo.toFixed(1)} kg CO₂`;
+  }
+
+  toggleBtn.addEventListener("click", () => {
+    sidebar.classList.remove("sidebar-hidden");
+    if (document.getElementById("map-tab").classList.contains("active")) {
+      setTimeout(() => {
+        initParanaMap();
+        leafletMap.invalidateSize();
+      }, 300);
+    }
+  });
+
+  closeBtn.addEventListener("click", () => {
+    sidebar.classList.add("sidebar-hidden");
+  });
+
+  tabButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const targetTab = button.getAttribute("data-tab");
+
+      tabButtons.forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      tabPanels.forEach(panel => {
+        if (panel.id === targetTab) {
+          panel.classList.add("active");
+          if (targetTab === "map-tab") {
+            setTimeout(() => {
+              initParanaMap();
+              leafletMap.invalidateSize();
+            }, 50);
+          }
+        } else {
+          panel.classList.remove("active");
+        }
+      });
+    });
+  });
+
+  litersInput.addEventListener("input", calcularEmissoes);
+  calcularEmissoes();
+});
